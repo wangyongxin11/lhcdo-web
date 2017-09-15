@@ -53,7 +53,7 @@
                 </Col>
                 <Col span="8">
                     <Card dis-hover style="text-align: center;height: 250px;">
-                        <div v-if="isBeginSimulate">
+                        <!--<div v-if="isBeginSimulate">
                             <i-circle
                                     :size="180"
                                     :trail-width="4"
@@ -66,8 +66,8 @@
                                     <h1>23421</h1>
                                 </div>
                             </i-circle>
-                        </div>
-                        <div v-else>
+                        </div>-->
+                        <!--<div v-else>-->
                             <Button :disabled="simulateButtonDisable" type="primary" size="large" :loading="simulating" @click="beginSimulate">
                                 <span v-if="simulating">
                                     正在模拟...
@@ -76,14 +76,14 @@
                                     开始模拟
                                 </span>
                             </Button>
-                        </div>
+                        <!--</div>-->
                     </Card>
                 </Col>
             </Row>
         </div>
         <div class="tableShowArea" v-if="analysisResult != null">
-            <a :href="downloadLink">{{analysisResult.resultFilePath}}<Button type="text" >下载模拟结果</Button></a>
-            <div style="display: none">
+            <a :href="downloadLink">{{analysisResult.fileName}}<Button type="text" >下载模拟结果</Button></a>
+            <!--<div style="display: none">
                 <Checkbox-group v-model="tableColumnsChecked" @on-change="changeTableColumns">
                     <Checkbox label="show">展示</Checkbox>
                     <Checkbox label="weak">唤醒</Checkbox>
@@ -103,7 +103,7 @@
                         <Page :total="100" :current="1" @on-change="changePage"></Page>
                     </div>
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
 </template>
@@ -139,7 +139,7 @@
             };
             const validateFile = (rule, value, callback)=>{
                 if(this.file !=null){
-                   callback();
+                    callback();
                 }else {
                     callback(new Error('请选择文件'));
                 }
@@ -173,10 +173,10 @@
                 isBeginSimulate:false,
                 uploadRecordId:null,
                 simulating:false,
-                simulateButtonDisable:false,
+                simulateButtonDisable:true,
                 analysisResult:null,
                 downloadLink:''
-            }
+            };
         },
         methods: {
             mockTableData2 () {
@@ -199,7 +199,7 @@
                         day: getNum(),
                         week: getNum(),
                         month: getNum()
-                    })
+                    });
                 }
                 return data;
             },
@@ -365,6 +365,7 @@
                             if(res.data){
                                 if(res.data.statusCode=='1'){
                                     _this.uploadRecordId = res.data.data;
+                                    _this.file=null;
                                     _this.$refs[name].resetFields();
                                     _this.$Message.success('提交成功');
                                     _this.simulateButtonDisable = false;
@@ -393,7 +394,6 @@
                 var _this = this;
                 this.simulating = true;
                 this.simulateButtonDisable = true;
-                this.uploadRecordId = 2;
                 if(_this.uploadRecordId!=null){
                     let serverUrl = Util.serverUrl;
                     Util.ajax.get('assetCreditAnalysis/analysis/'+this.uploadRecordId).then(function(res){
@@ -423,5 +423,5 @@
         mounted () {
             this.changeTableColumns();
         }
-    }
+    };
 </script>

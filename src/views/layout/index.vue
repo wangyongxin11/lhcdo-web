@@ -22,8 +22,8 @@
     </div>
 </template>
 <script>
-    import LhHeader from './header.vue'
-    import LhFooter from './footer.vue'
+    import LhHeader from './header.vue';
+    import LhFooter from './footer.vue';
 
     export default {
         name:'Index',
@@ -31,5 +31,5 @@
             LhHeader,
             LhFooter
         }
-    }
+    };
 </script>

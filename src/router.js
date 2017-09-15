@@ -1,5 +1,4 @@
 import Index from './views/layout/index.vue';
-import Cockpit from './views/business/cockpit.vue';
 import CalDefaultRate from './views/business/defaultRateTable.vue';
 
 const routers = [
@@ -12,11 +11,6 @@ const routers = [
         redirect:'calDefaultRate',
         component: Index,
         children:[
-            {
-                path:'cockpit',
-                component: Cockpit,
-                name:'cockpit'
-            },
             {
                 path:'calDefaultRate',
                 meta: {
