@@ -49,7 +49,7 @@
                     if(res.data){
                         if('1' == res.data.statusCode){
                             removeToken();
-                            _this.$store.commit('changeUsername',{username:''});
+                            _this.$store.commit('changeUser',{user:null});
                             localStorage.clear();
                             _this.$router.push({path:'/login'});
                         }else {
@@ -75,9 +75,16 @@
         },
         computed:{
             username(){
-                let name = this.$store.state.username;
-                if(name==''){
-                    name = localStorage.getItem('username');
+                let user = this.$store.state.user;
+                if(user==null){
+                    user = JSON.parse(localStorage.getItem('user'));
+                }
+                let name = '';
+                if(user){
+                    this.$store.commit('changeUser',{
+                        user:user
+                    });
+                    name = user.username;
                 }
                 return name;
             }

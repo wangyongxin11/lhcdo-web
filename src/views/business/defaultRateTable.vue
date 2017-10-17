@@ -176,7 +176,8 @@
                     num: '',
                     attachableId:'',
                     attachableType: '',
-                    summaryType:2
+                    summaryType:2,
+                    userId:null
                 },
                 sponsorList:null,
                 assetPoolRules:{
@@ -392,6 +393,7 @@
                             formData.append(key,_this.assetPool[key]);
                         });
                         formData.append('file',_this.file);
+                        formData.append('userId',_this.$store.state.user.id);
                         let config = {
                             headers:{
                                 'Content-Type': 'multipart/form-data'
@@ -438,6 +440,7 @@
                     if(valid){
                         _this.simulating = true;
                         _this.simulateButtonDisable = true;
+                        _this.simulationRecord.userId = _this.$store.state.user.id;
                         let serverUrl = Util.serverUrl;
                         Util.ajax.post('assetCreditAnalysis/analysis',_this.simulationRecord).then(function(res){
                             if(res.data){

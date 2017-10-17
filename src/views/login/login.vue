@@ -100,7 +100,7 @@
                                 if('1' == res.data.statusCode){
                                     let u = res.data.data;
                                     setToken(u.accessToken);
-                                    _this.$store.commit('changeUsername',{username:u.username});
+                                    _this.$store.commit('changeUser',{user:u});
                                     let redirectPath = _this.$router.currentRoute.query.redirect;
                                     if(redirectPath){
                                         _this.$router.push({path:redirectPath});

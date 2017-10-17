@@ -47,6 +47,26 @@ router.afterEach(() => {
     window.scrollTo(0, 0);
 });
 
+const store = new Vuex.Store({
+    state: {
+        user:null
+    },
+    getters: {
+
+    },
+    mutations: {
+        changeUser(state,payLoad){
+            state.user = payLoad.user;
+            if(payLoad.user){
+                localStorage.setItem('user',JSON.stringify(payLoad.user));
+            }
+        }
+    },
+    actions: {
+
+    }
+});
+
 Util.ajax.interceptors.request.use(function (config) {
     if(getToken()){
         //已登录
@@ -71,24 +91,6 @@ Util.ajax.interceptors.response.use(function (response) {
         });
     }
     return response;
-});
-
-const store = new Vuex.Store({
-    state: {
-        username:''
-    },
-    getters: {
-
-    },
-    mutations: {
-        changeUsername(state,payLoad){
-            state.username = payLoad.username;
-            localStorage.setItem('username',payLoad.username);
-        }
-    },
-    actions: {
-
-    }
 });
 
 new Vue({
