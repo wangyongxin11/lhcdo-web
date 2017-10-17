@@ -5,15 +5,15 @@ let util = {
 
 };
 util.title = function(title) {
-    title = title ? title : '联合信用评级模型分析系统';
+    title = title ? title : '联合信用评级数据分析平台';
     window.document.title = title;
 };
 
 const ajaxUrl = env === 'development' ?
     'http://127.0.0.1:8082' :
     env === 'production' ?
-    'http://172.16.6.2:8082' :
-    'http://172.16.6.2:8082';
+    'http://172.16.6.3:8082' :
+    'http://172.16.6.3:8082';
 
 util.serverUrl = ajaxUrl;
 

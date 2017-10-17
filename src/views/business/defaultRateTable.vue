@@ -19,29 +19,38 @@
                                         <Input v-model="assetPool.reservesMoney" placeholder="请输入" style="width: 200px"></Input>(万元)
                                     </FormItem>
                                 </Col>
-                                <Col span="14">
-                                    <FormItem label="模拟次数" prop="num">
-                                        <Input v-model="assetPool.num" placeholder="请输入" style="width: 200px"></Input>
-                                    </FormItem>
-                                </Col>
-                            </Row>
-                            <Row>
                                 <Col span="10">
                                     <FormItem label="初始起算日" prop="beginCalculateDate">
                                         <DatePicker :editable="false" v-model="assetPool.beginCalculateDate" type="date" placeholder="选择日期" style="width: 200px"></DatePicker>
                                     </FormItem>
                                 </Col>
+                            </Row>
+                            <Row>
+                                <Col span="10">
+                                    <FormItem label="发起机构" prop="sponsorId">
+                                        <Select v-model="assetPool.sponsorId" style="width:200px">
+                                            <Option v-for="item in sponsorList" :value="item.id" :key="item.id">{{ item.paramDesc }}</Option>
+                                        </Select>
+                                    </FormItem>
+                                </Col>
                                 <Col span="14">
+                                    <FormItem label="相关系数乘数" prop="multiplier">
+                                        <InputNumber :max="1" :min="0" :step="0.1" v-model="assetPool.multiplier" style="width: 200px"></InputNumber>
+                                    </FormItem>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col span="24">
                                     <FormItem label="待计算文件" prop="file">
-                                        <Upload
+                                        <Upload style="width: 210px;display: inline-block;"
                                                 :before-upload="handleUpload"
                                                 action="//test.com/posts/"
                                                 :format="['xls','xlsx','xlsm']"
                                                 accept=".xls,.xlsx,.xlsm"
                                         >
-                                            <Button type="ghost" icon="ios-cloud-upload-outline">选择要上传文件的文件</Button>
+                                            <Button type="ghost" icon="ios-cloud-upload-outline" style="width: 200px">选择要上传文件的文件</Button>
                                         </Upload>
-                                        <div v-if="file !== null">待上传文件：{{ file.name }}</div>
+                                        <div style="width: 400px;display: inline-block" v-if="file != null">待上传文件：{{ file.name }}</div>
                                     </FormItem>
                                 </Col>
                             </Row>
@@ -68,7 +77,11 @@
                             </i-circle>
                         </div>-->
                         <!--<div v-else>-->
-                            <Button :disabled="simulateButtonDisable" type="primary" size="large" :loading="simulating" @click="beginSimulate">
+                        <Form ref="simulateRecordForm" :model="simulationRecord" :rules="simulationRecordRules" :label-width="100">
+                            <FormItem label="模拟次数" prop="num" style="text-align: left">
+                                <Input v-model="simulationRecord.num" placeholder="请输入" style="width: 200px"></Input>(万次)
+                            </FormItem>
+                            <Button :disabled="simulateButtonDisable" type="primary" size="large" :loading="simulating" @click="beginSimulate('simulateRecordForm')">
                                 <span v-if="simulating">
                                     正在模拟...
                                 </span>
@@ -76,6 +89,7 @@
                                     开始模拟
                                 </span>
                             </Button>
+                        </Form>
                         <!--</div>-->
                     </Card>
                 </Col>
@@ -144,19 +158,36 @@
                     callback(new Error('请选择文件'));
                 }
             };
+            const validateSponsor = (rule, value, callback)=>{
+                if(value==null||value==''){
+                    callback(new Error('发起机构不能为空'));
+                }else {
+                    callback();
+                }
+            };
             return {
                 assetPool: {
                     reservesMoney: '',
-                    num: '',
                     beginCalculateDate: null,
+                    multiplier:1.0,
+                    sponsorId:null
+                },
+                simulationRecord:{
+                    num: '',
+                    attachableId:'',
+                    attachableType: '',
                     summaryType:2
                 },
+                sponsorList:null,
                 assetPoolRules:{
                     reservesMoney:[
                         {required: true,type:'number', validator: validateReservesMoney, trigger: 'blur'}
                     ],
-                    num:[
-                        {required: true, type:'integer',validator: validateNum, trigger: 'blur'},
+                    multiplier:[
+                        {required: true, type:'number',message: '相关系数乘数不允许为空', trigger: 'blur'},
+                    ],
+                    sponsorId:[
+                        {required: true, type: 'string', validator: validateSponsor, trigger: 'change'}
                     ],
                     beginCalculateDate:[
                         {required: true, type: 'date', message: '请选择初始起算日', trigger: 'blur'}
@@ -165,13 +196,18 @@
                         {required: true, type: 'object', validator: validateFile, trigger: 'change'}
                     ]
                 },
+                simulationRecordRules:{
+                    num:[
+                        {required: true, type:'integer',validator: validateNum, trigger: 'blur'},
+                    ]
+                },
                 file: null,
                 loadingStatus: false,
                 tableData2: this.mockTableData2(),
                 tableColumns2: [],
                 tableColumnsChecked: ['show', 'weak', 'signin', 'click', 'active', 'day7', 'day30', 'tomorrow', 'day', 'week', 'month'],
                 isBeginSimulate:false,
-                uploadRecordId:null,
+                portfolio:null,
                 simulating:false,
                 simulateButtonDisable:true,
                 analysisResult:null,
@@ -364,64 +400,97 @@
                         Util.ajax.post('assetCreditAnalysis/upload',formData,config).then(function (res) {
                             if(res.data){
                                 if(res.data.statusCode=='1'){
-                                    _this.uploadRecordId = res.data.data;
+                                    _this.portfolio = res.data.data;
+                                    _this.simulationRecord.attachableId=_this.portfolio.id;
+                                    _this.simulationRecord.attachableType='portfolio';
                                     _this.file=null;
                                     _this.$refs[name].resetFields();
                                     _this.$Message.success('提交成功');
                                     _this.simulateButtonDisable = false;
                                 }else {
-                                    _this.$Message.error(res.data.statusInfo);
+                                    if(res.data.statusInfo){
+                                        _this.$Modal.error({
+                                            title: '错误',
+                                            content: '提交失败:'+ res.data.statusInfo
+                                        });
+                                    }else {
+                                        _this.$Modal.error({
+                                            title: '错误',
+                                            content: '提交失败,模板数据有误'
+                                        });
+                                    }
                                 }
                             }
                             _this.loadingStatus = false;
-                        }).catch(function (error) {
-                            if (error.response) {
-                                // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-                                console.log(error.response.data);
-                                console.log(error.response.status);
-                                console.log(error.response.headers);
-                            } else {
-                                // Something happened in setting up the request that triggered an Error
-                                console.log('Error', error.message);
-                            }
-                            console.log(error.config);
+                        }).catch(function (err) {
+                            _this.$Modal.error({
+                                title: '错误',
+                                content: '提交失败'
+                            });
                             _this.loadingStatus = false;
                         });
                     }
                 });
             },
-            beginSimulate () {
+            beginSimulate (name) {
                 var _this = this;
-                this.simulating = true;
-                this.simulateButtonDisable = true;
-                if(_this.uploadRecordId!=null){
-                    let serverUrl = Util.serverUrl;
-                    Util.ajax.get('assetCreditAnalysis/analysis/'+this.uploadRecordId).then(function(res){
-                        if(res.data){
+                _this.$refs[name].validate((valid)=>{
+                    if(valid){
+                        _this.simulating = true;
+                        _this.simulateButtonDisable = true;
+                        let serverUrl = Util.serverUrl;
+                        Util.ajax.post('assetCreditAnalysis/analysis',_this.simulationRecord).then(function(res){
+                            if(res.data){
+                                if('0' == res.data.statusCode){
+                                    let content = '';
+                                    if(res.data.statusInfo){
+                                        content = '模拟过程出错:'+res.data.statusInfo;
+                                    }else {
+                                        content = '模拟过程出错,请排查数据';
+                                    }
+                                    _this.$Modal.error({
+                                        title: '错误',
+                                        content:content
+                                    });
+                                }else {
+                                    _this.analysisResult = res.data;
+                                    _this.downloadLink = serverUrl+'/assetCreditAnalysis/download/'+_this.simulationRecord.attachableId;
+                                }
+                                _this.simulating = false;
+                                _this.simulateButtonDisable = false;
+                            }
+                        }).catch(function (err) {
+                            _this.$Modal.error({
+                                title: '错误',
+                                content: '模拟过程出错'
+                            });
                             _this.simulating = false;
                             _this.simulateButtonDisable = false;
-                            _this.analysisResult = res.data;
-                            _this.downloadLink = serverUrl+"/assetCreditAnalysis/download/"+_this.uploadRecordId;
+                            _this.loadingStatus = false;
+                        });
+                        _this.isBeginSimulate = true;
+                    }
+                });
+            },
+            getSponsorList(){
+                let _this = this;
+                Util.ajax.get('/dict/sponsorList').then(function (res) {
+                    if(res.data){
+                        if(res.data.statusCode=='1'){
+                            _this.sponsorList = res.data.data;
                         }
-                    }).catch(function (error) {
-                        if (error.response) {
-                            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-                            console.log(error.response.data);
-                            console.log(error.response.status);
-                            console.log(error.response.headers);
-                        } else {
-                            // Something happened in setting up the request that triggered an Error
-                            console.log('Error', error.message);
-                        }
-                        console.log(error.config);
-                        _this.loadingStatus = false;
-                    });
-                    this.isBeginSimulate = true;
-                }
+                    }
+                }).catch(function (err) {
+                    _this.$Message.error('获取发起机构失败');
+                    /*_this.$Modal.error({
+                        okText:'确定',
+                        content:'获取发起机构失败'
+                    });*/
+                });
             }
         },
         mounted () {
-            this.changeTableColumns();
+            this.getSponsorList();
         }
     };
 </script>

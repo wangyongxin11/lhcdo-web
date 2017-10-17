@@ -11,9 +11,16 @@
                 </router-link>
             </div>
         </div>
+        <div class="layout-ceiling-main">
+            <span style="color: #ffffff"><Icon type="ios-person-outline" class="role-icon"></Icon>{{username}}</span>
+            <Button type="primary" @click="logout">退出登录</Button>
+        </div>
     </Menu>
 </template>
 <script>
+    import { removeToken } from '../../libs/auth';
+    import Util from '../../libs/util';
+
     export default {
         name:'LhHeader',
         data:()=>{
@@ -30,8 +37,49 @@
             };
         },
         methods:{
-            gotoPage:(val)=>{
+            gotoPage(val){
                 this.selectedMenu=val;
+            },
+            getUsername(){
+                this.username = localStorage.getItem('user');
+            },
+            logout(){
+                let _this = this;
+                Util.ajax.get('user/logout').then(function(res){
+                    if(res.data){
+                        if('1' == res.data.statusCode){
+                            removeToken();
+                            _this.$store.commit('changeUsername',{username:''});
+                            localStorage.clear();
+                            _this.$router.push({path:'/login'});
+                        }else {
+                            let content = '';
+                            if(res.data.statusInfo){
+                                content = '退出失败,'+res.data.statusInfo;
+                            }else {
+                                content = '退出失败';
+                            }
+                            _this.$Modal.error({
+                                title: '错误',
+                                content:content
+                            });
+                        }
+                    }
+                }).catch(function (err) {
+                    _this.$Modal.error({
+                        title: '错误',
+                        content: '退出失败'
+                    });
+                });
+            }
+        },
+        computed:{
+            username(){
+                let name = this.$store.state.username;
+                if(name==''){
+                    name = localStorage.getItem('username');
+                }
+                return name;
             }
         }
     };
@@ -53,5 +101,26 @@
         margin-right: 20px;
         line-height: 40px;
         text-align: center;
+    }
+    .layout-ceiling-main{
+        float: right;
+        margin-right: 15px;
+    }
+    .layout-ceiling-main button{
+        margin-left: 10px;
+    }
+    .role-icon{
+        border: 1px solid #57a3f3;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 24px;
+        font-size: 22px;
+        color: #57a3f3;
+        margin-right: 5px;
+        position: absolute;
+        top: 27px;
+        right: 144px;
     }
 </style>
