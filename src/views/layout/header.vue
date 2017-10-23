@@ -40,9 +40,6 @@
             gotoPage(val){
                 this.selectedMenu=val;
             },
-            getUsername(){
-                this.username = localStorage.getItem('user');
-            },
             logout(){
                 let _this = this;
                 Util.ajax.get('user/logout').then(function(res){
@@ -84,7 +81,7 @@
                     this.$store.commit('changeUser',{
                         user:user
                     });
-                    name = user.username;
+                    name = user.displayName;
                 }
                 return name;
             }

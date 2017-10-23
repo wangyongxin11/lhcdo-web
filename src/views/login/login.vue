@@ -110,7 +110,7 @@
                                 }else {
                                     let content = '';
                                     if(res.data.statusInfo){
-                                        content = '登录失败,'+res.data.statusInfo;
+                                        content = +res.data.statusInfo;
                                     }else {
                                         content = '登录失败';
                                     }
