@@ -144,6 +144,8 @@
                 if(Number.isInteger(num)){
                     if(num<=0){
                         callback(new Error('请输入大于0的整数'));
+                    }else if(num>1000){
+                        callback(new Error('目前最大限制输入1000万次'));
                     }else {
                         callback();
                     }

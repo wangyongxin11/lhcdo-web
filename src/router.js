@@ -23,14 +23,14 @@ const routers = [
             }
         ]
     },
-    /*{
+    {
         path: '/index',
         meta: {
             title: '基础数据管理'
         },
         name:'index',
         component: Layout
-    },*/
+    },
     {
         path: '/login',
         meta: {
