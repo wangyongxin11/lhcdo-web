@@ -1,23 +1,21 @@
 import Vue from 'vue';
 import iView from 'iview';
 import VueRouter from 'vue-router';
-import Routers from './router';
+import {routers,otherRouter,appRouter} from './router';
 import Vuex from 'vuex';
 import Util from './libs/util';
 import App from './app.vue';
 import './styles/iview.css';
-import { getToken } from './libs/auth';
-import { removeToken } from './libs/auth';
+import { getToken,removeToken } from './libs/auth';
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
-
 Vue.use(iView);
 
 // 路由配置
 const RouterConfig = {
-    mode: 'history',
-    routes: Routers
+    //mode: 'history',
+    routes: routers
 };
 const router = new VueRouter(RouterConfig);
 const whiteList = ['/login']; // 不重定向白名单
@@ -25,9 +23,16 @@ router.beforeEach((to, from, next) => {
     iView.LoadingBar.start();
     if(getToken()){
         if (to.path === '/login') {
-            next({ path: '/' });
+            next({ name: 'home_index' });
         } else {
-            next();
+            if(Util.getRouterObjByName([otherRouter, ...appRouter], to.name)){
+                Util.toDefaultPage([otherRouter, ...appRouter], to.name, router, next);
+            }else {
+                /*router.replace({
+                    name: 'error_401'
+                });*/
+                next();
+            }
         }
     } else {
         if(whiteList.indexOf(to.path) !== -1){
@@ -49,7 +54,9 @@ router.afterEach(() => {
 
 const store = new Vuex.Store({
     state: {
-        user:null
+        user:null,
+        tagsList:[...otherRouter.children],
+        menuList:[]
     },
     getters: {
 
@@ -60,6 +67,16 @@ const store = new Vuex.Store({
             if(payLoad.user){
                 localStorage.setItem('user',JSON.stringify(payLoad.user));
             }
+        },
+        setTagsList(state,tagsList){
+            state.tagsList.push(...tagsList);
+        },
+        updateMenuList(state){
+            let menuList=[];
+            appRouter.forEach((item)=>{
+                menuList.push(item);
+            });
+            state.menuList = menuList;
         }
     },
     actions: {
@@ -97,5 +114,24 @@ new Vue({
     el: '#app',
     router: router,
     store: store,
-    render: h => h(App)
+    render: h => h(App),
+    data: {
+        currentPageName: ''
+    },
+    mounted () {
+        this.currentPageName = this.$route.name;
+        // 权限菜单过滤相关
+        this.$store.commit('updateMenuList');
+    },
+    created () {
+        let tagsList = [];
+        appRouter.map((item) => {
+            if (item.children.length <= 1) {
+                tagsList.push(item.children[0]);
+            } else {
+                tagsList.push(...item.children);
+            }
+        });
+        this.$store.commit('setTagsList', tagsList);
+    }
 });

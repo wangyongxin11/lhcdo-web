@@ -22,4 +22,50 @@ util.ajax = axios.create({
     timeout: 600000
 });
 
+util.toDefaultPage = function (routers, name, route, next) {
+    let len = routers.length;
+    let i = 0;
+    let notHandle = true;
+    while (i < len) {
+        if (routers[i].name === name && routers[i].redirect === undefined) {
+            route.replace({
+                name: routers[i].children[0].name
+            });
+            notHandle = false;
+            next();
+            break;
+        }
+        i++;
+    }
+    if (notHandle) {
+        next();
+    }
+};
+
+util.getRouterObjByName = function (routers, name) {
+    let routerObj = null;
+    routers.forEach(item => {
+        if (item.name === 'otherRouter') {
+            item.children.forEach((child, i) => {
+                if (child.name === name) {
+                    routerObj = item.children[i];
+                }
+            });
+        } else {
+            if (item.children.length === 1) {
+                if (item.children[0].name === name) {
+                    routerObj = item.children[0];
+                }
+            } else {
+                item.children.forEach((child, i) => {
+                    if (child.name === name) {
+                        routerObj = item.children[i];
+                    }
+                });
+            }
+        }
+    });
+    return routerObj;
+};
+
 export default util;
