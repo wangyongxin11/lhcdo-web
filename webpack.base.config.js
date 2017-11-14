@@ -17,26 +17,36 @@ module.exports = {
     module: {
         rules: [{
                 test: /\.vue$/,
-                loader: 'vue-loader',
-                options: {
-                    loaders: {
+                use:[
+                    {
+                        loader: 'vue-loader',
+                        options: {
+                            loaders: {
 
-                        less: ExtractTextPlugin.extract({
-                            use: ['css-loader?minimize', 'autoprefixer-loader', 'less-loader'],
-                            fallback: 'vue-style-loader'
-                        }),
+                                less: ExtractTextPlugin.extract({
+                                    use: ['css-loader?minimize', 'autoprefixer-loader', 'less-loader'],
+                                    fallback: 'vue-style-loader'
+                                }),
 
-                        sass: ExtractTextPlugin.extract({
-                            use: ['css-loader?minimize', 'autoprefixer-loader', 'sass-loader'],
-                            fallback: 'vue-style-loader'
-                        }),
+                                sass: ExtractTextPlugin.extract({
+                                    use: ['css-loader?minimize', 'autoprefixer-loader', 'sass-loader'],
+                                    fallback: 'vue-style-loader'
+                                }),
 
-                        css: ExtractTextPlugin.extract({
-                            use: ['css-loader', 'autoprefixer-loader'],
-                            fallback: 'vue-style-loader'
-                        })
+                                css: ExtractTextPlugin.extract({
+                                    use: ['css-loader', 'autoprefixer-loader'],
+                                    fallback: 'vue-style-loader'
+                                })
+                            }
+                        }
+                    },
+                    {
+                        loader: 'iview-loader',
+                        options: {
+                            prefix: false
+                        }
                     }
-                }
+                ]
             },
             {
                 test: /iview\/.*?js$/,

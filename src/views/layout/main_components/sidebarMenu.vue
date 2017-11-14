@@ -28,9 +28,7 @@
 
 <script>
 import util from '@/libs/util';
-import Vue from 'vue';
-import VueI18n from 'vue-i18n';
-Vue.use(VueI18n);
+
 export default {
     data () {
         return {
@@ -50,12 +48,10 @@ export default {
     },
     methods: {
         changeMenu (active) {
-            if (active !== 'accesstest_index') {
-                util.openNewPage(this, active);
-                this.$router.push({
-                    name: active
-                });
-            }
+            util.openNewPage(this, active);
+            this.$router.push({
+                name: active
+            });
         },
         itemTitle (item) {
             if (typeof item.title === 'object') {
@@ -71,16 +67,7 @@ export default {
         },
         currentPageName () {
             this.openedSubmenuArr = this.$store.state.openedSubmenuArr;
-            this.$nextTick(() => {
-                this.$refs.sideMenu.updateOpened();
-            });
         }
-    },
-    updated () {
-        this.$nextTick(() => {
-            this.$refs.sideMenu.updateOpened();
-        });
     }
-
 };
 </script>

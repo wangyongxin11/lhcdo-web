@@ -24,24 +24,25 @@
                     </div>
                 </div>
                 <div class="header-avator-con">
-                    <div class="switch-theme-con">
+                    <!--<div class="switch-theme-con">
                         <Row class="switch-theme" type="flex" justify="center" align="middle">
                             <theme-dropdown-menu></theme-dropdown-menu>
                         </Row>
-                    </div>
+                    </div>-->
                     <div class="user-dropdown-menu-con">
                         <Row type="flex" justify="end" align="middle" class="user-dropdown-innercon">
                             <Dropdown transfer trigger="click" @on-click="handleClickUserDropdown">
                                 <a href="javascript:void(0)">
-                                    <span class="main-user-name">{{ userName }}</span>
+                                    <span class="main-user-name">{{ username }}</span>
                                     <Icon type="arrow-down-b"></Icon>
                                 </a>
                                 <DropdownMenu slot="list">
-                                    <DropdownItem name="ownSpace">个人中心</DropdownItem>
-                                    <DropdownItem name="loginout" divided>退出登录</DropdownItem>
+                                    <!--<DropdownItem name="ownSpace">个人中心</DropdownItem>
+                                    <DropdownItem name="logout" divided>退出登录</DropdownItem>-->
+                                    <DropdownItem name="logout">退出登录</DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
-                            <Avatar :src="avatorPath" style="background: #619fe7;margin-left: 10px;"></Avatar>
+                            <Avatar icon="person" style="background: #619fe7;margin-left: 10px;"></Avatar>
                         </Row>
                     </div>
                 </div>
@@ -65,7 +66,7 @@
     import breadcrumbNav from './main_components/breadcrumbNav.vue';
     import themeDropdownMenu from './main_components/themeDropdownMenu.vue';
     import sidebarMenuShrink from './main_components/sidebarMenuShrink.vue';
-    import Cookies from 'js-cookie';
+    import {removeToken} from '@/libs/auth.js';
     import util from '@/libs/util.js';
     
     export default {
@@ -81,9 +82,7 @@
                 spanLeft: 4,
                 spanRight: 20,
                 currentPageName: '',
-                hideMenuText: false,
-                userName: '',
-                messageCount: 0
+                hideMenuText: false
             };
         },
         computed: {
@@ -108,8 +107,19 @@
             cachePage () {
                 return this.$store.state.cachePage;
             },
-            lang () {
-                return this.$store.state.lang;
+            username(){
+                let user = this.$store.state.user;
+                if(user==null){
+                    user = JSON.parse(localStorage.getItem('user'));
+                }
+                let name = '';
+                if(user){
+                    this.$store.commit('changeUser',{
+                        user:user
+                    });
+                    name = user.displayName;
+                }
+                return name;
             }
         },
         methods: {
@@ -119,9 +129,6 @@
                 if (pathArr.length >= 2) {
                     this.$store.commit('addOpenSubmenu', pathArr[1].name);
                 }
-                this.userName = Cookies.get('user');
-                let messageCount = 3;
-                this.messageCount = messageCount.toString();
                 this.checkTag(this.$route.name);
             },
             toggleClick () {
@@ -133,28 +140,38 @@
                     this.$router.push({
                         name: 'ownspace_index'
                     });
-                } else if (name === 'loginout') {
+                } else if (name === 'logout') {
                     // 退出登录
-                    Cookies.remove('user');
-                    Cookies.remove('password');
-                    Cookies.remove('hasGreet');
-                    Cookies.remove('access');
-                    this.$Notice.close('greeting');
-                    this.$store.commit('clearOpenedSubmenu');
-                    // 回复默认样式
-                    let themeLink = document.querySelector('link[name="theme"]');
-                    themeLink.setAttribute('href', '');
-                    // 清空打开的页面等数据，但是保存主题数据
-                    let theme = '';
-                    if (localStorage.theme) {
-                        theme = localStorage.theme;
-                    }
-                    localStorage.clear();
-                    if (theme) {
-                        localStorage.theme = theme;
-                    }
-                    this.$router.push({
-                        name: 'login'
+                    let _this = this;
+                    util.ajax.get('user/logout').then(function(res){
+                        if(res.data){
+                            if('1' == res.data.statusCode){
+                                removeToken();
+                                _this.$store.commit('clearOpenedSubmenu');
+                                _this.$store.commit('changeUser',{user:null});
+                                localStorage.clear();
+                                _this.$router.push({
+                                    name: 'login'
+                                });
+                            }else {
+                                let content = '';
+                                if(res.data.statusInfo){
+                                    content = '退出失败,'+res.data.statusInfo;
+                                }else {
+                                    content = '退出失败';
+                                }
+                                _this.$Modal.error({
+                                    title: '错误',
+                                    content:content
+                                });
+                            }
+                        }
+                    }).catch(function (err) {
+                        console.log(err);
+                        _this.$Modal.error({
+                            title: '错误',
+                            content: '退出失败'
+                        });
                     });
                 }
             },
@@ -177,78 +194,12 @@
                     this.$store.commit('addOpenSubmenu', pathArr[1].name);
                 }
                 this.checkTag(to.name);
-            },
-            lang () {
-                util.setCurrentPath(this, this.$route.name);  // 在切换语言时用于刷新面包屑
             }
         },
         mounted () {
             this.init();
-            // 问候信息相关
-            if (!Cookies.get('hasGreet')) {
-                let now = new Date();
-                let hour = now.getHours();
-                let greetingWord = {
-                    title: '',
-                    words: ''
-                };
-                let userName = Cookies.get('user');
-                if (hour > 5 && hour < 6) {
-                    greetingWord = {title: '凌晨好~' + userName, words: '早起的鸟儿有虫吃~'};
-                } else if (hour >= 6 && hour < 9) {
-                    greetingWord = {title: '早上好~' + userName, words: '来一杯咖啡开启美好的一天~'};
-                } else if (hour >= 9 && hour < 12) {
-                    greetingWord = {title: '上午好~' + userName, words: '工作要加油哦~'};
-                } else if (hour >= 12 && hour < 14) {
-                    greetingWord = {title: '中午好~' + userName, words: '午饭要吃饱~'};
-                } else if (hour >= 14 && hour < 17) {
-                    greetingWord = {title: '下午好~' + userName, words: '下午也要活力满满哦~'};
-                } else if (hour >= 17 && hour < 19) {
-                    greetingWord = {title: '傍晚好~' + userName, words: '下班没事问候下爸妈吧~'};
-                } else if (hour >= 19 && hour < 21) {
-                    greetingWord = {title: '晚上好~' + userName, words: '工作之余品一品书香吧~'};
-                } else {
-                    greetingWord = {title: '深夜好~' + userName, words: '夜深了，注意休息哦~'};
-                }
-                this.$Notice.config({
-                    top: 130
-                });
-                this.$Notice.info({
-                    title: greetingWord.title,
-                    desc: greetingWord.words,
-                    duration: 4,
-                    name: 'greeting'
-                });
-                Cookies.set('hasGreet', 1);
-            }
         },
         created () {
-            // 查找当前用户之前登录时设置的主题
-            let name = Cookies.get('user');
-            if (localStorage.theme) {
-                let hasThisUser = JSON.parse(localStorage.theme).some(item => {
-                    if (item.userName === name) {
-                        this.$store.commit('changeMenuTheme', item.menuTheme);
-                        this.$store.commit('changeMainTheme', item.mainTheme);
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
-                if (!hasThisUser) {
-                    this.$store.commit('changeMenuTheme', 'dark');
-                    this.$store.commit('changeMainTheme', 'b');
-                }
-            } else {
-                this.$store.commit('changeMenuTheme', 'dark');
-                this.$store.commit('changeMainTheme', 'b');
-            }
-            // 根据用户设置主题
-            if (this.$store.state.theme !== 'b') {
-                let stylesheetPath = './dist/' + this.$store.state.theme + '.css';
-                let themeLink = document.querySelector('link[name="theme"]');
-                themeLink.setAttribute('href', stylesheetPath);
-            }
             // 显示打开的页面的列表
             this.$store.commit('setOpenedList');
         }

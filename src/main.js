@@ -5,7 +5,7 @@ import {routers,otherRouter,appRouter} from './router';
 import Vuex from 'vuex';
 import Util from './libs/util';
 import App from './app.vue';
-import './styles/iview.css';
+import 'iview/dist/styles/iview.css';
 import { getToken,removeToken } from './libs/auth';
 
 Vue.use(VueRouter);
@@ -14,7 +14,7 @@ Vue.use(iView);
 
 // 路由配置
 const RouterConfig = {
-    //mode: 'history',
+    mode: 'history',
     routes: routers
 };
 const router = new VueRouter(RouterConfig);
@@ -55,13 +55,37 @@ router.afterEach(() => {
 const store = new Vuex.Store({
     state: {
         user:null,
+        loading:false,
+        routers: [
+            otherRouter,
+            ...appRouter
+        ],
         tagsList:[...otherRouter.children],
-        menuList:[]
+        menuList:[],
+        pageOpenedList:[{
+            title: '首页',
+            path: '',
+            name: 'home_index'
+        }],
+        currentPageName: '',
+        currentPath: [
+            {
+                title: '首页',
+                path: '',
+                name: 'home_index'
+            }
+        ], // 面包屑数组
+        cachePage: [],
+        openedSubmenuArr: [],  // 要展开的菜单数组
+        dontCache: []  // 在这里定义你不想要缓存的页面的name属性值(参见路由配置router.js)
     },
     getters: {
 
     },
     mutations: {
+        setLoadingStatus(state,status){
+            state.loading = status;
+        },
         changeUser(state,payLoad){
             state.user = payLoad.user;
             if(payLoad.user){
@@ -77,6 +101,91 @@ const store = new Vuex.Store({
                 menuList.push(item);
             });
             state.menuList = menuList;
+        },
+        pageOpenedList (state, get) {
+            let openedPage = state.pageOpenedList[get.index];
+            if (get.argu) {
+                openedPage.argu = get.argu;
+            }
+            if (get.query) {
+                openedPage.query = get.query;
+            }
+            state.pageOpenedList.splice(get.index, 1, openedPage);
+            localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
+        },
+        setCurrentPath (state, pathArr) {
+            state.currentPath = pathArr;
+        },
+        setCurrentPageName (state, name) {
+            state.currentPageName = name;
+        },
+        addOpenSubmenu (state, name) {
+            let hasThisName = false;
+            let isEmpty = false;
+            if (name.length === 0) {
+                isEmpty = true;
+            }
+            if (state.openedSubmenuArr.indexOf(name) > -1) {
+                hasThisName = true;
+            }
+            if (!hasThisName && !isEmpty) {
+                state.openedSubmenuArr.push(name);
+            }
+        },
+        clearOpenedSubmenu (state) {
+            state.openedSubmenuArr.length = 0;
+        },
+        increateTag (state, tagObj) {
+            if (!Util.oneOf(tagObj.name, state.dontCache)) {
+                state.cachePage.push(tagObj.name);
+                localStorage.cachePage = JSON.stringify(state.cachePage);
+            }
+            state.pageOpenedList.push(tagObj);
+        },
+        setOpenedList (state) {
+            state.pageOpenedList = localStorage.pageOpenedList ? JSON.parse(localStorage.pageOpenedList) : [otherRouter.children[0]];
+        },
+        closePage (state, name) {
+            state.cachePage.forEach((item, index) => {
+                if (item === name) {
+                    state.cachePage.splice(index, 1);
+                }
+            });
+        },
+        removeTag (state, name) {
+            state.pageOpenedList.map((item, index) => {
+                if (item.name === name) {
+                    state.pageOpenedList.splice(index, 1);
+                }
+            });
+        },
+        clearAllTags (state) {
+            state.pageOpenedList.splice(1);
+            router.push({
+                name: 'home_index'
+            });
+            state.cachePage.length = 0;
+            localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
+        },
+        clearOtherTags (state, vm) {
+            let currentName = vm.$route.name;
+            let currentIndex = 0;
+            state.pageOpenedList.forEach((item, index) => {
+                if (item.name === currentName) {
+                    currentIndex = index;
+                }
+            });
+            if (currentIndex === 0) {
+                state.pageOpenedList.splice(1);
+            } else {
+                state.pageOpenedList.splice(currentIndex + 1);
+                state.pageOpenedList.splice(1, currentIndex - 1);
+            }
+            let newCachepage = state.cachePage.filter(item => {
+                return item === currentName;
+            });
+            state.cachePage = newCachepage;
+            localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
         }
     },
     actions: {
