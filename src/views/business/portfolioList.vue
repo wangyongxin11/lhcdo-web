@@ -97,10 +97,12 @@
 <script>
     import Util from '../../libs/util';
     import PortfolioForm from '../business/components/portfolioForm.vue';
+    import LargeAmountTable from '../business/components/largeAmountTestResultTable.vue';
 
     export default {
         components:{
-            PortfolioForm
+            PortfolioForm,
+            LargeAmountTable
         },
         data () {
             return {
@@ -338,8 +340,8 @@
                 }
                 if(this.simulationRecord.attachableType==='portfolio'){
                     this.showNumModal = true;
-                }else {
-                    this.simulate('largeAmountTest/calculate');
+                }else if(this.simulationRecord.attachableType==='large_amount') {
+                    this.calLargeAmount();
                 }
             },
             simulate(url){
@@ -370,6 +372,50 @@
                                     params: args
                                 });
                             }
+                        }
+                        _this.simulating = false;
+                    }
+                    _this.openClose = true;
+                }).catch(function (err) {
+                    _this.$Modal.error({
+                        title: '错误',
+                        content: '计算过程出错'
+                    });
+                    _this.simulating = false;
+                    _this.openClose = true;
+                });
+            },
+            calLargeAmount () {
+                this.openClose = false;
+                this.simulating = true;
+                let _this = this;
+                Util.ajax.get('largeAmountTest/calculateAllLevel/'+this.simulationRecord.attachableId).then(function(res){
+                    if(res.data){
+                        if('0' == res.data.statusCode){
+                            let content = '';
+                            if(res.data.statusInfo){
+                                content = '计算过程出错:'+res.data.statusInfo;
+                            }else {
+                                content = '计算过程出错,请排查数据';
+                            }
+                            _this.$Modal.error({
+                                title: '错误',
+                                content:content
+                            });
+                        }else {
+                            _this.showSelectModel = false;
+                            _this.$Modal.info({
+                                title:'大额测试计算结果',
+                                width:70,
+                                scrollable:true,
+                                render:h=>{
+                                    return h(LargeAmountTable,{
+                                        props:{
+                                            results:res.data.data
+                                        }
+                                    });
+                                }
+                            });
                         }
                         _this.simulating = false;
                     }

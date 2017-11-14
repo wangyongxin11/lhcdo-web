@@ -129,7 +129,7 @@ export const appRouter = [
                 icon: 'ios-list-outline',
                 name: 'cashFlowResultList',
                 title: '现金流',
-                component: resolve => { require(['./views/business/components/resultTable.vue'], resolve); }
+                component: resolve => { require(['./views/business/components/portfolioInfo.vue'], resolve); }
             }
         ]
     }
