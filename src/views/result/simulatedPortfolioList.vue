@@ -211,7 +211,7 @@
                         } else {
                             let content = '';
                             if (res.data.statusInfo) {
-                                content = +res.data.statusInfo;
+                                content = res.data.statusInfo;
                             } else {
                                 content = '查询失败';
                             }

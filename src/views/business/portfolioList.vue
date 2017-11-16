@@ -234,10 +234,12 @@
                 this.showAddPortfolio = false;
                 this.pageInfo = this.queryPortfolioList();
             },
-            show (index) {
-                this.$Modal.info({
-                    title: '计算模型选择',
-                    content: `项目名称：${this.pageInfo.data[index].project}<br>交易名称：${this.pageInfo.data[index].business}<br>创建人：${this.pageInfo.data[index].founder}`
+            show (id) {
+                let args = { portfolioId: id };
+                Util.openNewPage(this, 'portfolioInfo', args);
+                this.$router.push({
+                    name: 'portfolioInfo',
+                    params: args
                 });
             },
             chooseOperation(index){
@@ -257,7 +259,7 @@
                                 }else {
                                     let content = '';
                                     if(res.data.statusInfo){
-                                        content = +res.data.statusInfo;
+                                        content = res.data.statusInfo;
                                     }else {
                                         content = '删除失败';
                                     }
@@ -314,7 +316,7 @@
                         }else {
                             let content = '';
                             if(res.data.statusInfo){
-                                content = +res.data.statusInfo;
+                                content = res.data.statusInfo;
                             }else {
                                 content = '查询失败';
                             }

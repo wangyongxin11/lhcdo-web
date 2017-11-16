@@ -22,7 +22,7 @@
         <Row type="flex">
             <Col span="24">
                 <div class="layout-content">
-                    <Table stripe :columns="titleList" :data="recordList"></Table>
+                    <Table stripe :loading="loading" :columns="titleList" :data="recordList"></Table>
                 </div>
             </Col>
         </Row>
@@ -122,7 +122,8 @@
                         }
                     }
                 ],
-                recordList: []
+                recordList: [],
+                loading:true
             };
         },
         methods: {
@@ -141,7 +142,7 @@
                             }else {
                                 let content = '';
                                 if(res.data.statusInfo){
-                                    content = +res.data.statusInfo;
+                                    content = res.data.statusInfo;
                                 }else {
                                     content = '查询失败';
                                 }
@@ -151,7 +152,9 @@
                                 });
                             }
                         }
+                        _this.loading = false;
                     }).catch(function (err) {
+                        _this.loading = false;
                         _this.$Modal.error({
                             title: '错误',
                             content: '查询失败'
@@ -160,11 +163,14 @@
                 }
             }
         },
-        mounted(){
+        created(){
+            this.recordList = [];
             this.querySimulationRecordList();
         },
         watch: {
             '$route' () {
+                this.recordList = [];
+                this.loading = true;
                 this.querySimulationRecordList();
             }
         }

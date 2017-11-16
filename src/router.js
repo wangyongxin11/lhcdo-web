@@ -45,7 +45,8 @@ export const otherRouter = {
     children: [
         { path: 'home', title: '首页', name: 'home_index', component: resolve => { require(['./views/home/home.vue'], resolve); } },
         { path: 'ownspace', title: '个人中心', name: 'ownspace_index', component: resolve => { require(['./views/own-space/own-space.vue'], resolve); } },
-        { path: 'simulationRecordList/:portfolioId', title: '资产池计算结果列表', name: 'simulationRecordList', component: resolve => { require(['./views/result/simulationRecordList.vue'], resolve); } }
+        { path: 'simulationRecordList/:portfolioId', title: '资产池计算结果列表', name: 'simulationRecordList', component: resolve => { require(['./views/result/simulationRecordList.vue'], resolve); } },
+        { path: 'portfolioInfo/:portfolioId', title: '资产池详情', name: 'portfolioInfo', component: resolve => { require(['./views/business/components/portfolioInfo.vue'], resolve); } }
     ]
 };
 

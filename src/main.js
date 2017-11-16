@@ -219,6 +219,12 @@ Util.ajax.interceptors.response.use(function (response) {
     return response;
 });
 
+//全局过滤器
+Vue.filter('dateFormat', function (value,type) {
+    if (!value) return '';
+    return Util.formatDate(new Date(value),type);
+});
+
 new Vue({
     el: '#app',
     router: router,
