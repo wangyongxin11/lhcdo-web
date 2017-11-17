@@ -51,7 +51,7 @@ export const otherRouter = {
 };
 
 export const appRouter = [
-    {
+    /*{
         path: '/base',
         icon: 'social-buffer',
         name: 'base',
@@ -87,7 +87,7 @@ export const appRouter = [
                 component: resolve => { require(['./views/business/portfolioList.vue'], resolve); }
             }
         ]
-    },
+    },*/
     {
         path: '/calculate',
         icon: 'ios-analytics',
@@ -101,14 +101,14 @@ export const appRouter = [
                 name: 'portfolioList',
                 title: '资产池列表',
                 component: resolve => { require(['./views/business/portfolioList.vue'], resolve); }
-            },
+            }/*,
             {
                 path: 'cashFlow',
                 icon: 'shuffle',
                 name: 'cashFlow',
                 title: '现金流',
                 component: resolve => { require(['./views/business/portfolioList.vue'], resolve); }
-            }
+            }*/
         ]
     },
     {
@@ -124,14 +124,14 @@ export const appRouter = [
                 name: 'simulatedPortfolioList',
                 title: '组合资产违约风险',
                 component: resolve => { require(['./views/result/simulatedPortfolioList.vue'], resolve); }
-            },
+            }/*,
             {
                 path: 'cashFlowResultList',
                 icon: 'ios-list-outline',
                 name: 'cashFlowResultList',
                 title: '现金流',
                 component: resolve => { require(['./views/business/components/portfolioInfo.vue'], resolve); }
-            }
+            }*/
         ]
     }
 ];

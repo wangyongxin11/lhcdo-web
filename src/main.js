@@ -21,6 +21,7 @@ const router = new VueRouter(RouterConfig);
 const whiteList = ['/login']; // 不重定向白名单
 router.beforeEach((to, from, next) => {
     iView.LoadingBar.start();
+    Util.title(to.meta.title);
     if(getToken()){
         if (to.path === '/login') {
             next({ name: 'home_index' });
@@ -39,12 +40,10 @@ router.beforeEach((to, from, next) => {
             next();
         }else {
             next({
-                path:'/login',
-                query:{redirect: to.fullPath}
+                name:'login'
             });
         }
     }
-    Util.title(to.meta.title);
 });
 
 router.afterEach(() => {
@@ -210,7 +209,7 @@ Util.ajax.interceptors.response.use(function (response) {
             onOk:function () {
                 removeToken();
                 router.replace({
-                    path: '/login',
+                    name: 'login',
                     query: {redirect: router.currentRoute.fullPath}
                 });
             }

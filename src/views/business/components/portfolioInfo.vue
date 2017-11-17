@@ -120,7 +120,8 @@
                         align: 'center',
                         editable: true,
                         render:(h,params)=>{
-                            return h('span',params.row.lendingRate+'%');
+                            let rate = params.row.assetSelfRecoveryRate * 100;
+                            return h('span',rate.toFixed(2)+'%');
                         }
                     },
                     {
@@ -138,7 +139,7 @@
                         editable: true,
                         render:(h,params)=>{
                             let rate = params.row.assetSelfRecoveryRate * 100;
-                            return h('span',rate+'%');
+                            return h('span',rate.toFixed(2)+'%');
                         }
                     },
                     {
@@ -188,7 +189,7 @@
                             if(rate==0){
                                 rate = '';
                             }
-                            return h('span',rate);
+                            return h('span',rate.toFixed(2));
                         }
                     },
                     {
@@ -269,7 +270,7 @@
                         editable: true,
                         render:(h,params)=>{
                             let rate = params.row.mortgageRecoveryRate * 100;
-                            return h('span',rate+'%');
+                            return h('span',rate.toFixed(2)+'%');
                         }
                     },
                     {
@@ -286,7 +287,7 @@
                         render:(h,params)=>{
                             let debtLevel = params.row.debtLevel;
                             if(debtLevel){
-                                return h('span',params.row.defaultMagnification);
+                                return h('span',params.row.defaultMagnification.toFixed(2));
                             }else{
                                 return h('span','');
                             }
@@ -302,7 +303,7 @@
                             let debtLevel = params.row.debtLevel;
                             if(debtLevel){
                                 let rate = params.row.guaranteeRecoveryRate * 100;
-                                return h('span',rate+'%');
+                                return h('span',rate.toFixed(2)+'%');
                             }else{
                                 return h('span','');
                             }
@@ -317,7 +318,7 @@
                             let debtLevel = params.row.debtLevel;
                             if(debtLevel){
                                 let rate = params.row.finalRecoveryRate * 100;
-                                return h('span',rate+'%');
+                                return h('span',rate.toFixed(2)+'%');
                             }else{
                                 return h('span','');
                             }
@@ -332,7 +333,7 @@
                             let debtLevel = params.row.debtLevel;
                             if(debtLevel){
                                 let rate = params.row.totalDefaultRate * 100;
-                                return h('span',rate+'%');
+                                return h('span',rate.toFixed(2)+'%');
                             }else{
                                 return h('span','');
                             }

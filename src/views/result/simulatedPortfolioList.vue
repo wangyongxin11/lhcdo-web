@@ -28,23 +28,14 @@
         <Row type="flex">
             <Col span="24">
             <div class="layout-content">
-                <Row class="action-area">
+                <Row class="action-area" :gutter="16">
                     <Col span="4">
-                    <Input v-model="portfolio.portfolioName" placeholder="请输入交易名称..." icon="ios-search"></Input>
+                    <Input v-model="portfolio.portfolioName" placeholder="请输入交易名称..."></Input>
                     </Col>
-                    <!--<Col span="4">
-                    <Dropdown style="margin-left: 20px">
-                        <Button type="primary">
-                            项目状态
-                            <Icon type="arrow-down-b"></Icon>
-                        </Button>
-                        <DropdownMenu slot="list">
-                        <DropdownItem>未进行</DropdownItem>
-                        <DropdownItem>已完成</DropdownItem>
-                    </DropdownMenu>
-                    </Dropdown>
-                    </Col>-->
-                    <Col span="20">
+                    <Col span="4">
+                        <Button @click="queryPortfolioList(1,10)" type="primary" icon="search">搜索</Button>
+                    </Col>
+                    <Col span="16">
                         <div class="button-group">
                             <div style="margin-right: 5px;display: inline-block">
                                 <span>只看自己</span>
