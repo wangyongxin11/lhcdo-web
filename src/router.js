@@ -138,9 +138,9 @@ export const appRouter = [
 
 export const routers = [
     loginRouter,
+    otherRouter,
+    ...appRouter,
     page401,
     page404,
-    page500,
-    otherRouter,
-    ...appRouter
+    page500
 ];
