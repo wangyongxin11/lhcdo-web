@@ -5,7 +5,7 @@
     <div class="main" :class="{'main-hide-text': hideMenuText}">
         <div class="sidebar-menu-con" :style="{width: hideMenuText?'60px':'200px', overflow: hideMenuText ? 'visible' : 'auto', background: $store.state.menuTheme === 'dark'?'#495060':'white'}">
             <div class="logo-con">
-                <img v-show="!hideMenuText"  src="../../assets/image/logo.png" key="max-logo" />
+                <img v-show="!hideMenuText"  src="../../assets/image/logo-max.jpg" key="max-logo" />
                 <img v-show="hideMenuText" src="../../assets/image/logo.png" key="min-logo" />
             </div>
             <sidebar-menu v-if="!hideMenuText" :menuList="menuList" :iconSize="14"/>
