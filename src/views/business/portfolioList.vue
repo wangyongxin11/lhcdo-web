@@ -30,12 +30,9 @@
                 <div class="layout-content">
                     <Row class="action-area" :gutter="16">
                         <Col span="4">
-                            <Input v-model="portfolio.portfolioName" placeholder="请输入交易名称..."></Input>
+                            <Input v-model="portfolio.portfolioName" @on-click="queryPortfolioList(1,10)" @on-enter="queryPortfolioList(1,10)" icon="search" placeholder="请输入交易名称..."></Input>
                         </Col>
-                        <Col span="4">
-                            <Button @click="queryPortfolioList(1,10)" type="primary" icon="search">搜索</Button>
-                        </Col>
-                        <Col span="16">
+                        <Col span="20">
                             <div class="button-group">
                                 <div style="margin-right: 5px;display: inline-block">
                                     <span>只看自己</span>
