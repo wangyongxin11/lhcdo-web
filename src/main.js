@@ -7,10 +7,12 @@ import Util from './libs/util';
 import App from './app.vue';
 import 'iview/dist/styles/iview.css';
 import { getToken,removeToken } from './libs/auth';
+import VueStomp from './libs/websocket/vue-stomp';
 
 Vue.use(VueRouter);
 Vue.use(Vuex);
 Vue.use(iView);
+Vue.use(VueStomp);
 
 // 路由配置
 const RouterConfig = {

@@ -72,7 +72,7 @@
                 <Button type="primary" :loading="simulating" @click="beginSimulate">计算</Button>
             </div>
         </Modal>
-        <Modal width="30" v-model="showNumModal" title="模拟次数" @on-ok="simulate('assetCreditAnalysis/analysis')" :mask-closable="false">
+        <Modal width="30" v-model="showNumModal" title="模拟次数" @on-ok="simulate()" :mask-closable="false">
             <div style="text-align: center;">
                 模拟次数<InputNumber style="width: 200px;margin-left: 10px" :max="1000" :min="1" :step="10" v-model="simulationRecord.num"></InputNumber>(万次)
             </div>
@@ -165,7 +165,9 @@
                             let calBtn = h('Button', {
                                 props: {
                                     type: 'primary',
-                                    size: 'small'
+                                    size: 'small',
+                                    disabled:this.simulating,
+                                    loading:this.simulating
                                 },
                                 style: {
                                     marginRight: '5px'
@@ -334,12 +336,12 @@
                     this.calLargeAmount();
                 }
             },
-            simulate(url){
+            simulate(){
                 this.openClose = false;
                 this.simulating = true;
                 this.simulationRecord.userId = this.$store.state.user.id;
                 let _this = this;
-                Util.ajax.post(url,this.simulationRecord).then(function(res){
+                Util.ajax.post('assetCreditAnalysis/simulate',this.simulationRecord).then(function(res){
                     if(res.data){
                         if('0' == res.data.statusCode){
                             let content = '';
@@ -354,16 +356,16 @@
                             });
                         }else {
                             _this.showSelectModel = false;
-                            if(_this.simulationRecord.attachableType==='portfolio'){
+                            _this.getSimulatedNum(res.data.data);
+                            /*if(_this.simulationRecord.attachableType==='portfolio'){
                                 let args = { portfolioId: _this.simulationRecord.attachableId};
                                 Util.openNewPage(_this, 'simulationRecordList', args);
                                 _this.$router.push({
                                     name: 'simulationRecordList',
                                     params: args
                                 });
-                            }
+                            }*/
                         }
-                        _this.simulating = false;
                     }
                     _this.openClose = true;
                 }).catch(function (err) {
@@ -418,10 +420,63 @@
                     _this.simulating = false;
                     _this.openClose = true;
                 });
+            },
+            onConnected(){
+                this.$stompClient.subscribe('/user/'+this.$store.state.user.id+'/completedNum', this.completedNumCallback, this.onFailed);
+            },
+            onFailed(frame){
+                console.log('Failed: ' + JSON.stringify(frame));
+            },
+            connectSrv(){
+                this.connetWM('ws://localhost:8082/portfolio',{}, this.onConnected, this.onFailed);
+            },
+            subscribeCompletedNumCallback(frame){
+                console.log('subscribeCompletedNumCallback msg=>' + frame.body);
+            },
+            completedNumCallback(frame){
+                let simulatingInfo = JSON.parse(frame.body);
+                let invokeId = this.$store.state.user.id;
+                if(simulatingInfo){
+                    let currentCount = 0;
+                    if(simulatingInfo.alreadyNum>=simulatingInfo.simulationNum){
+                        this.$Notice.success({
+                            title: '组合资产模拟完成提醒',
+                            desc: '您提交的组合资产模拟【'+simulatingInfo.portfolioName+'】模拟'+simulatingInfo.simulationNum+'次任务，现已模拟完成，模拟结果请到结果下载页下载！',
+                            duration: 0
+                        });
+                        currentCount = simulatingInfo.simulationNum;
+                        this.removeStompMonitor(invokeId);
+                        this.simulating = false;
+                    }else{
+                        currentCount = simulatingInfo.alreadyNum;
+                    }
+                    this.$Message.info('已模拟'+currentCount+'次');
+                }
+            },
+            disconnect(){
+                this.disconnetWM();
+            },
+            getSimulatedNum(simulationId){
+                let invokeId = this.$store.state.user.id;
+                let req={};
+                req.userId = invokeId;
+                req.simulationRecordId = simulationId;
+                this.sendWM('/completedNum', JSON.stringify(req), invokeId, this.subscribeCompletedNumCallback, 30000);
+            }
+        },
+        stompClient:{
+            monitorIntervalTime: 2000,
+            stompReconnect: true,
+            timeout(orgCmd) {
+                console.log('超时',orgCmd);
             }
         },
         mounted(){
             this.queryPortfolioList(1,10);
+            this.connectSrv();
+        },
+        beforeDestroy(){
+            this.disconnect();
         }
     };
 </script>
