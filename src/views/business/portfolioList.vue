@@ -165,9 +165,9 @@
                             let calBtn = h('Button', {
                                 props: {
                                     type: 'primary',
-                                    size: 'small',
-                                    disabled:this.simulating,
-                                    loading:this.simulating
+                                    size: 'small'
+                                    //disabled:this.simulating,
+                                    //loading:this.simulating
                                 },
                                 style: {
                                     marginRight: '5px'
